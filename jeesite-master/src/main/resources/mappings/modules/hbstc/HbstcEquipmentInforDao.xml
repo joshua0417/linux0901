@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.hbstc.dao.HbstcEquipmentInforDao">
+    
+	<sql id="hbstcEquipmentInforColumns">
+		a.id AS "id",
+		a.classification_no AS "classificationNo",
+		a.school_no AS "schoolNo",
+		a.place_use AS "placeUse",
+		a.price AS "price",
+		a.equipment_no AS "equipmentNo",
+		a.equipment_name AS "equipmentName",
+		a.classify_no AS "classifyNo",
+		a.date_purchase AS "datePurchase",
+		a.parameter AS "parameter",
+		a.return_date AS "returnDate",
+		a.lend_date AS "lendDate",
+		/*//a.lend_name AS "lendName",*/
+		a.hbstc_equipment_classification_id AS "hbstcEquipmentClassification.id",
+		a.lend_name AS "user.id",
+		a.accessory AS "accessory",
+		a.device_status AS "deviceStatus",
+		a.use_status AS "useStatus",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u.name AS "user.name"
+	</sql>
+	
+	<sql id="hbstcEquipmentInforJoins">
+        LEFT JOIN sys_user u ON u.id = a.lend_name
+		LEFT JOIN hbstc_equipment_classification c ON c.id = a.hbstc_equipment_classification_id
+	</sql>
+    
+	<select id="get" resultType="HbstcEquipmentInfor">
+		SELECT 
+			<include refid="hbstcEquipmentInforColumns"/>
+		FROM hbstc_equipment_infor a
+		<include refid="hbstcEquipmentInforJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="HbstcEquipmentInfor">
+		SELECT 
+			<include refid="hbstcEquipmentInforColumns"/>
+		FROM hbstc_equipment_infor a
+		<include refid="hbstcEquipmentInforJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="equipmentNo != null and equipmentNo != ''">
+				AND a.equipment_no LIKE 
+					<if test="dbName == 'oracle'">'%'||#{equipmentNo}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{equipmentNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{equipmentNo},'%')</if>
+			</if>
+			<if test="equipmentName != null and equipmentName != ''">
+				AND a.equipment_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{equipmentName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{equipmentName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{equipmentName},'%')</if>
+			</if>
+			<if test="parameter != null and parameter != ''">
+				AND a.parameter LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parameter}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parameter}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parameter},'%')</if>
+			</if>
+			<if test="deviceStatus != null and deviceStatus != ''">
+				AND a.device_status LIKE
+				<if test="dbName == 'oracle'">'%'||#{deviceStatus}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{deviceStatus}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{deviceStatus},'%')</if>
+			</if>
+			<if test="hbstcEquipmentClassification!= null and hbstcEquipmentClassification!= ''">
+				<!--AND a.hbstc_equipment_classification_id LIKE
+				<if test="dbName == 'oracle'">'%'||#{hbstcEquipmentClassification.id}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{hbstcEquipmentClassification.id}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{hbstcEquipmentClassification.id},'%')</if>-->
+				AND (c.id = #{hbstcEquipmentClassification.id} OR c.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{hbstcEquipmentClassification.id}||',%')</if>
+				<if test="dbName == 'mssql'">'%,'+#{hbstcEquipmentClassification.id}+',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{hbstcEquipmentClassification.id}, ',%'))</if>
+
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="HbstcEquipmentInfor">
+		SELECT 
+			<include refid="hbstcEquipmentInforColumns"/>
+		FROM hbstc_equipment_infor a
+		<include refid="hbstcEquipmentInforJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findListDevice" resultType="HbstcEquipmentInfor">
+		SELECT
+		<include refid="hbstcEquipmentInforColumns"/>
+		FROM hbstc_equipment_infor a
+		<include refid="hbstcEquipmentInforJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="deviceStatus != null and deviceStatus != ''">
+				AND a.device_status LIKE
+				<if test="dbName == 'oracle'">'%'||#{deviceStatus}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{deviceStatus}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{deviceStatus},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hbstc_equipment_infor(
+			id,
+			classification_no,
+			school_no,
+			place_use,
+			price,
+			equipment_no,
+			equipment_name,
+			classify_no,
+			date_purchase,
+			parameter,
+			return_date,
+			lend_date,
+			lend_name,
+			hbstc_equipment_classification_id,
+			accessory,
+			device_status,
+			use_status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{classificationNo},
+			#{schoolNo},
+			#{placeUse},
+			#{price},
+			#{equipmentNo},
+			#{equipmentName},
+			#{classifyNo},
+			#{datePurchase},
+			#{parameter},
+			#{returnDate},
+			#{lendDate},
+			#{user.id},
+			#{hbstcEquipmentClassification.id},
+			#{accessory},
+			#{deviceStatus},
+			#{useStatus},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hbstc_equipment_infor SET 	
+			equipment_no = #{equipmentNo},
+			classification_no = #{classificationNo},
+			school_no = #{schoolNo},
+			place_use = #{placeUse},
+			price = #{price},
+			equipment_name = #{equipmentName},
+			classify_no = #{classifyNo},
+			date_purchase = #{datePurchase},
+			parameter = #{parameter},
+			return_date = #{returnDate},
+			lend_date = #{lendDate},
+			lend_name = #{user.id},
+			hbstc_equipment_classification_id = #{hbstcEquipmentClassification.id},
+			accessory = #{accessory},
+			device_status = #{deviceStatus},
+			use_status = #{useStatus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE hbstc_equipment_infor SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

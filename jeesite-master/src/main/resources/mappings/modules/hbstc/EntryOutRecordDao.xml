@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.hbstc.dao.EntryOutRecordDao">
+    
+	<sql id="entryOutRecordColumns">
+		a.id AS "id",
+		a.transactor AS "transactor",
+		a.lend_name AS "lendName",
+		a.lend_reason AS "lendReason",
+		a.lend_time AS "lendTime",
+		a.return_time AS "returnTime",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="entryOutRecordJoins">
+	</sql>
+    
+	<select id="get" resultType="EntryOutRecord">
+		SELECT 
+			<include refid="entryOutRecordColumns"/>
+		FROM entry_out_record a
+		<include refid="entryOutRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="EntryOutRecord">
+		SELECT 
+			<include refid="entryOutRecordColumns"/>
+		FROM entry_out_record a
+		<include refid="entryOutRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="transactor != null and transactor != ''">
+				AND a.transactor LIKE 
+					<if test="dbName == 'oracle'">'%'||#{transactor}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{transactor}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{transactor},'%')</if>
+			</if>
+			<if test="lendName != null and lendName != ''">
+				AND a.lend_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{lendName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{lendName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{lendName},'%')</if>
+			</if>
+			<if test="lendReason != null and lendReason != ''">
+				AND a.lend_reason LIKE 
+					<if test="dbName == 'oracle'">'%'||#{lendReason}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{lendReason}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{lendReason},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="EntryOutRecord">
+		SELECT 
+			<include refid="entryOutRecordColumns"/>
+		FROM entry_out_record a
+		<include refid="entryOutRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO entry_out_record(
+			id,
+			transactor,
+			lend_name,
+			lend_reason,
+			lend_time,
+			return_time,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{transactor},
+			#{lendName},
+			#{lendReason},
+			#{lendTime},
+			#{returnTime},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE entry_out_record SET 	
+			transactor = #{transactor},
+			lend_name = #{lendName},
+			lend_reason = #{lendReason},
+			lend_time = #{lendTime},
+			return_time = #{returnTime},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE entry_out_record SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
